@@ -6,8 +6,16 @@ import Head from 'next/head';
 import { StylesProvider, ThemeProvider } from '@material-ui/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import getPageContext, { PageContext } from '../src/getPageContext';
+import withApollo from '../src/withApollo'
+import { ApolloProvider } from 'react-apollo'
+import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks'
+import { ApolloClient } from 'apollo-boost'
 
-class MyApp extends App {
+type Props = {
+  apollo: ApolloClient<any>,
+}
+
+class MyApp extends App <Props> {
   constructor() {
     // @ts-ignore
     super();
@@ -23,28 +31,32 @@ class MyApp extends App {
   }
 
   render() {
-    const { Component, pageProps } = this.props;
+    const { Component, pageProps, apollo } = this.props
     return (
       <Container>
-        <Head>
-          <title>My page</title>
-        </Head>
-        {/* Wrap every page in Styles and Theme providers */}
-        <StylesProvider
-          generateClassName={this.pageContext.generateClassName}
-          sheetsRegistry={this.pageContext.sheetsRegistry}
-          sheetsManager={this.pageContext.sheetsManager}
-        >
-          {/* ThemeProvider makes the theme available down the React
-              tree thanks to React context. */}
-          <ThemeProvider theme={this.pageContext.theme}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline />
-            {/* Pass pageContext to the _document though the renderPage enhancer
-                to render collected styles on server side. */}
-            <Component pageContext={this.pageContext} {...pageProps} />
-          </ThemeProvider>
-        </StylesProvider>
+        <ApolloProvider client={apollo}>
+          <ApolloHooksProvider client={apollo}>
+            <Head>
+              <title>My page</title>
+            </Head>
+            {/* Wrap every page in Styles and Theme providers */}
+            <StylesProvider
+              generateClassName={this.pageContext.generateClassName}
+              sheetsRegistry={this.pageContext.sheetsRegistry}
+              sheetsManager={this.pageContext.sheetsManager}
+            >
+              {/* ThemeProvider makes the theme available down the React
+                  tree thanks to React context. */}
+              <ThemeProvider theme={this.pageContext.theme}>
+                {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+                <CssBaseline />
+                {/* Pass pageContext to the _document though the renderPage enhancer
+                    to render collected styles on server side. */}
+                <Component pageContext={this.pageContext} {...pageProps} />
+              </ThemeProvider>
+            </StylesProvider>
+          </ApolloHooksProvider>
+        </ApolloProvider>
       </Container>
     );
   }
@@ -52,4 +64,4 @@ class MyApp extends App {
   private pageContext: PageContext;
 }
 
-export default MyApp;
+export default withApollo(MyApp);
